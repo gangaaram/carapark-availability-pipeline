@@ -21,5 +21,36 @@ APIs used: [OneMap API](https://www.onemap.gov.sg/apidocs/), [data.gov.sg API](h
 
 ## Data Pipeline
 ### Data Ingestion
-The python code used to ingest data from the api is here 
+The python code used to ingest data from the api is [here](https://github.com/gangaaram/carapark-availability-pipeline/blob/main/python-ingest/). A Cloud Scheduler job triggers the ingestion service every minute. The python ingestion service then:
+1) Calls the carpark availability API
+2) Extracts carpark and lot availability information
+3) Adds an ingestion_timestamp
+4) Loads the data into BigQuery
+
+### Data Storage
+The data is stored in BigQuery using two main tables and merged on carpark_number=car_park_no to get coordinate and address details.
+<img width="948" height="422" alt="image" src="https://github.com/user-attachments/assets/5c60fb9d-7ecb-4881-a4f9-a0707673409b" />
+
+### BigQuery Partitioning
+Because the pipeline collects data every minute, storing all historical snapshots indefinitely would cause the dataset to grow rapidly. To manage storage and query costs, the availability data is partitioned using ingestion_timestamp and by every hour. After 1 hour, the previous hour's data will be deleted.<p>
+
+This allows the application to maintain recent availability data while keeping the cloud infrastructure cost-efficient.
+
+```sql
+CREATE TABLE `radiant-clone-480213-i6.Carpark.carpark_availability`
+(
+  carpark_number STRING,
+  update_datetime STRING,
+  lot_type STRING,
+  lots_available INT64,
+  total_lots INT64,
+  ingestion_timestamp TIMESTAMP
+)
+PARTITION BY TIMESTAMP_TRUNC(ingestion_timestamp, HOUR)
+OPTIONS (
+  partition_expiration_days = 0.0416667
+);
+```
+### Retrieving the Latest Availability
+
 
