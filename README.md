@@ -1,5 +1,5 @@
 # Singapore Carpark Availability Data Pipeline
-An end-to-end data engineering project ran on GCP that collects real-time Singapore carpark availability data, processes and enriches it using SQL Joins, and serves the latest information through a frontend UI.
+An end-to-end data engineering project ran on GCP that collects real-time Singapore carpark availability data (1-minute refreshes), processes and enriches it using SQL Joins, and serves the latest information through a frontend UI. Give it a try [here](https://carpark-availability-tau.vercel.app/).
 
 ## Project Overview
 This project uses Singapore's open government data to build a pipeline that:
@@ -21,7 +21,7 @@ APIs used: [OneMap API](https://www.onemap.gov.sg/apidocs/), [data.gov.sg API](h
 
 ## Data Pipeline
 ### Data Ingestion
-The python code used to ingest data from the api is [here](https://github.com/gangaaram/carpark-availability-pipeline/blob/main/python-ingest/). A Cloud Scheduler job triggers the ingestion service every minute. The python ingestion service then:
+The Python code used to ingest data from the API is [here](https://github.com/gangaaram/carpark-availability-pipeline/blob/main/python-ingest/). A Cloud Scheduler job triggers the ingestion service every minute. The python ingestion service then:
 1) Calls the carpark availability API
 2) Extracts carpark and lot availability information
 3) Adds an ingestion_timestamp
@@ -53,7 +53,7 @@ OPTIONS (
 ```
 ### Retrieving the Latest Availability
 
-The code used in the frontend to retrieve data from BigQuery is [here](https://github.com/gangaaram/carapark-availability-pipeline/blob/main/python-get-data.py/).
+The code used in the frontend to retrieve data from BigQuery is [here](https://github.com/gangaaram/carapark-availability-pipeline/blob/main/python-get-data.py/). It retrieves the data whenever someone loads the frontend UI and a call to the API is made.
 
 ### Frontend UI
 
@@ -62,12 +62,30 @@ The processed data is exposed through the backend API above and displayed using 
 2) Current carpark availability
 3) Availability Classification
 4) Address-based searches
-5) Postal-code searches with the help of OneMap API. Refer [here] <p>
+5) Postal-code searches with the help of OneMap API. Refer [here](https://github.com/gangaaram/carpark-availability-pipeline/blob/main/python-postal-search.py/) <p>
 
 The carparks are categories based on the proportion of available lots. High if >50%, Medium if 20 to 50% and Low if <20%. They are also colour coded with green as high, yellow as medium and red as low. <p>
-<img width="70%" height="70%" alt="image" src="https://github.com/user-attachments/assets/d994c1e8-bc4d-40e7-a841-50a16ed93fad" />
+<img width="70%" height="70%" alt="image" src="https://github.com/user-attachments/assets/d994c1e8-bc4d-40e7-a841-50a16ed93fad" /><p>
+
+With the help of geospatial data (x_coord,y_coord), leaflet.js was used to create a map based visualisation that allows for easy use. Additionaly, address and postal-code searches allow users to quickly search specific areas rather than zooming in.
 
 ### Google Cloud Platform
-This project uses Google Cloud IAM and service accounts to manage access to cloud run functions. Services such as the retrieve 
+This project uses Google Cloud IAM and service accounts to manage access to cloud run functions. Services such as the retrieve postal code should only allow private and not public access as it involves environment variables such as API keys, emails and passwords. <p>
+Another important factor when designing the pipeline was controlling cloud costs. Since the ingestion pipeline runs every minute, a large amount of data can accumulate over time. The project therefore uses:
+1) BigQuery partitioning
+2) Data retention policies
+3) Targeted SQL queries
+4) Serverless Google Cloud services 
+<p>These design decisions help minimise unnecessary storage and compute usage while maintaining the functionality of the application.
+
+### Key Concepts Learned & Overall Takeaway
+1) Designing a pipeline to continuously ingest, store, transform and serve data.
+2) Using the cloud infrastructure and figuring out the right products needed to maintain a real-time data pipeline.
+4) Structuring and managing data in Data Warehouses for efficient querying
+5) Using SQL to enrich data through JOINs and save cost through PARTITION
+6) Using Python code to create backend APIs
+7) Minimising cost of project and ensuring security through IAM and Service accounts.
+<p> The project helped develop an understanding of how raw data can be transformed into a usable data product through a combination of data engineering, cloud infrastructure, SQL, backend development and visualisation. The key learning was understanding how these components connect together to build a complete, automated data solution.</p>
+
 
 
