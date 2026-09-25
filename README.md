@@ -2,7 +2,7 @@
 An end-to-end data engineering project ran on GCP that collects real-time Singapore carpark availability data, processes and enriches it using SQL Joins, and serves the latest information through a frontend UI.
 
 ## Project Overview
-This project uses Singapore's open govenment data to build a pipeline that:
+This project uses Singapore's open government data to build a pipeline that:
 1) Retrieves real-time carpark availability data from the data.gov.sg API
 2) Ingests the data into BigQuery through Python Code ran on Cloud Run Functions
 3) Stores availability snapshots in batches that refresh every 1 minute
@@ -21,7 +21,7 @@ APIs used: [OneMap API](https://www.onemap.gov.sg/apidocs/), [data.gov.sg API](h
 
 ## Data Pipeline
 ### Data Ingestion
-The python code used to ingest data from the api is [here](https://github.com/gangaaram/carapark-availability-pipeline/blob/main/python-ingest/). A Cloud Scheduler job triggers the ingestion service every minute. The python ingestion service then:
+The python code used to ingest data from the api is [here](https://github.com/gangaaram/carpark-availability-pipeline/blob/main/python-ingest/). A Cloud Scheduler job triggers the ingestion service every minute. The python ingestion service then:
 1) Calls the carpark availability API
 2) Extracts carpark and lot availability information
 3) Adds an ingestion_timestamp
@@ -52,5 +52,22 @@ OPTIONS (
 );
 ```
 ### Retrieving the Latest Availability
+
+The code used in the frontend to retrieve data from BigQuery is [here](https://github.com/gangaaram/carapark-availability-pipeline/blob/main/python-get-data.py/).
+
+### Frontend UI
+
+The processed data is exposed through the backend API above and displayed using Leaflet and Vite. The application provides: 
+1) Interactive Singapore Map
+2) Current carpark availability
+3) Availability Classification
+4) Address-based searches
+5) Postal-code searches with the help of OneMap API. Refer [here] <p>
+
+The carparks are categories based on the proportion of available lots. High if >50%, Medium if 20 to 50% and Low if <20%. They are also colour coded with green as high, yellow as medium and red as low. <p>
+<img width="70%" height="70%" alt="image" src="https://github.com/user-attachments/assets/d994c1e8-bc4d-40e7-a841-50a16ed93fad" />
+
+### Google Cloud Platform
+This project uses Google Cloud IAM and service accounts to manage access to cloud run functions. Services such as the retrieve 
 
 
